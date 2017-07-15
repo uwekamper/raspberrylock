@@ -1,12 +1,13 @@
 [Unit]
-Description=raspberrylock
+Description=c-lab schloss
+After=network.target
 
 [Service]
-Type=simple
-User=ffwi
+User=root
+Group=root
 WorkingDirectory=/opt/raspberrylock/
-ExecStart=/opt/raspberrylock/schloss.py
-TimeoutSec=60
+ExecStart=/bin/bash /opt/raspberrylock/run.sh
+Type=simple
 Restart=always
 
 [Install]

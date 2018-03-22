@@ -1,3 +1,4 @@
+import asyncio
 import importlib.util
 
 try:
@@ -6,16 +7,18 @@ try:
 except ImportError:
     import FakeRPi.GPIO as GPIO
 
+from .base_opener import BaseOpener
 
 class GpioOpener(BaseOpener):
-    def open_door(self):
+
+    async def open_door(self):
         """
         Open the door and turn the LED in the open button on.
 
         :return:
         """
         GPIO.output(self.OPEN_PIN, 1)
-        sleep(1)
+        await asyncio.sleep(1.0)
         GPIO.output(self.OPEN_PIN, 0)
 
         #GPIO.output(self.LED_PIN, 1)

@@ -50,6 +50,8 @@ class CBaseLDAPAuthorization(BaseAuthorization):
                     # In the default case, PINs in the c-base LDAP are stored as hashes
                     elif record != None and record.startswith('{SSHA}'):
                         checked_hash = self.check_c_base_hash(record, pin, username)
+                        log.info("Check returned {}".format(checked_hash))
+
                         if checked_hash == True:
                             return True
                     else:

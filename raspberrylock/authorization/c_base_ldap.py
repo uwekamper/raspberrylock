@@ -67,5 +67,5 @@ class CBaseLDAPAuthorization(BaseAuthorization):
                     return False
         except Exception as e:
             log.error('ldap connection failed: %s' % e)
-        finally:
-            return False
+
+        return False

@@ -42,7 +42,7 @@ GPIO.setwarnings(False)
 
 NUMERIC_KEYS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
-BOUNCE_TIME = 300  # in milliseconds
+BOUNCE_TIME = 600  # in milliseconds
 STALE_TIMEOUT = 30  # in seconds
 timeouts = {'1': BOUNCE_TIME, '2': BOUNCE_TIME, '3': BOUNCE_TIME, '4': BOUNCE_TIME,
             '5': BOUNCE_TIME, '6': BOUNCE_TIME, '7': BOUNCE_TIME, '8': BOUNCE_TIME,

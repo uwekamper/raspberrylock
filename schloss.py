@@ -22,7 +22,7 @@ import subprocess
 from queue import Queue
 from threading import Thread, RLock
 
-from docopt import docopt
+# from docopt import docopt
 from RPi import GPIO
 
 from ldap_interface import authenticate
@@ -60,6 +60,8 @@ UID = ''
 PIN = ''
 RESET_TIMER = STALE_TIMEOUT
 
+
+THEME = 'default'
 
 def next_theme():
     """
@@ -249,9 +251,9 @@ def main():
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version=__version__)
+    # args = docopt(__doc__, version=__version__)
     try:
-        THEME = args['--theme']
+        # THEME = args['--theme']
         main()
     except KeyboardInterrupt:
         GPIO.cleanup()

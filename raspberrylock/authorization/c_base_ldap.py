@@ -32,7 +32,7 @@ class CBaseLDAPAuthorization(BaseAuthorization):
             return False
 
         try:
-            server = ldap3.Server(self.config.URI, use_ssl=True, get_info=ldap3.ALL)
+            server = ldap3.Server(self.config.URI, get_info=ldap3.ALL)
             with ldap3.Connection(server, self.config.BINDDN, self.config.BINDPW,
                                   auto_bind=True) as conn:
                 conn.search(self.config.BASE,
@@ -48,11 +48,10 @@ class CBaseLDAPAuthorization(BaseAuthorization):
                         return True
 
                     # In the default case, PINs in the c-base LDAP are stored as hashes
-                    elif record.startswith('{SSHA}'):
+                    elif record != None and record.startswith('{SSHA}'):
                         checked_hash = self.check_c_base_hash(record, pin, username)
                         if checked_hash == True:
                             return True
-
                     else:
                         log.error('PIN incorrectly stored in LDAP, please re-enter PIN.')
 

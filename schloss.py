@@ -27,13 +27,9 @@ from RPi import GPIO
 
 from raspberrylock.authorization.c_base_ldap import CBaseLDAPAuthorization
 
-log = logging.getLogger('schloss.py')
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch = logging.StreamHandler(sys.stderr)
-ch.setFormatter(formatter)
-log.addHandler(ch)
+logging.basicConfig(level=logging.DEBUG, stream=sys.stderr, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-log.setLevel(logging.DEBUG)
+log = logging.getLogger('schloss.py')
 
 __version__ = '0.1.0'
 

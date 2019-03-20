@@ -28,13 +28,15 @@ class CBaseLDAPAuthorization(BaseAuthorization):
         :param pin: The PIN entered by the user via the keyboard
         :return: True if user should be allowed in, false otherwise
         """
-        if uid == '' or pin == '':
-            return False
+        #if uid == '' or pin == '':
+        #    return False
 
+        log.info("Connecting")
         try:
             server = ldap3.Server(self.config.URI, get_info=ldap3.ALL)
             with ldap3.Connection(server, self.config.BINDDN, self.config.BINDPW,
-                                  auto_bind=True) as conn:
+                                  auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND) as conn:
+                log.info("Searching")
                 conn.search(self.config.BASE,
                            self.config.ACCESS_FILTER.format(uid),
                            attributes=['uid', 'c-labPIN'])

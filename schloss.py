@@ -16,18 +16,24 @@ Options:
 """
 
 import os
+import sys
 import time
 import random
+import logging
 import subprocess
 from queue import Queue
 from threading import Thread, RLock
-
-# from docopt import docopt
 from RPi import GPIO
 
-# from ldap_interface import authenticate
 from raspberrylock.authorization.c_base_ldap import CBaseLDAPAuthorization
 
+log = logging.getLogger('schloss.py')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch = logging.StreamHandler(sys.stderr)
+ch.setFormatter(formatter)
+log.addHandler(ch)
+
+log.setLevel(logging.DEBUG)
 
 __version__ = '0.1.0'
 
@@ -173,7 +179,8 @@ def control_loop():
     # The second 'A' would be mandatory for a non-4-digit UID, luckily all c-base UIDs are 4-digit, though.
     while True:
         key = Q.get()
-        print('state={}, got symbol {}'.format(STATE, '#'))
+        log.info('state={}, got symbol'.format(STATE))
+        log.debug('Symbol: {}'.format(key))
         RESET_TIMER = STALE_TIMEOUT
         Q.task_done()
         if STATE == 0:

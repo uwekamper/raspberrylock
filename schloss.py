@@ -25,7 +25,8 @@ from threading import Thread, RLock
 # from docopt import docopt
 from RPi import GPIO
 
-from ldap_interface import authenticate
+# from ldap_interface import authenticate
+from raspberrylock.authorization.c_base_ldap import CBaseLDAPAuthorization
 
 
 __version__ = '0.1.0'
@@ -60,6 +61,9 @@ UID = ''
 PIN = ''
 RESET_TIMER = STALE_TIMEOUT
 
+import config
+
+AUTH = CBaseLDAPAuthorization(config=config.LDAP)
 
 THEME = 'default'
 

@@ -227,6 +227,7 @@ def control_loop():
 def open_if_correct(uid, pin):
     print('checking ldap ...')
     if AUTH.check(uid, pin):
+        log.info('Opening...')
         subprocess.Popen([PLAYER, './themes/%s/success.wav' % THEME],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         next_theme()
@@ -240,6 +241,7 @@ def open_if_correct(uid, pin):
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         with LOCK:
             time.sleep(2)
+    log.info('End openifcorrect...')
 
 
 def keypad_loop():

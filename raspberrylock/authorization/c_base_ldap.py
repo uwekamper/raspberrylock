@@ -39,8 +39,8 @@ class CBaseLDAPAuthorization(BaseAuthorization):
                            self.config.ACCESS_FILTER.format(uid),
                            attributes=['uid', 'c-labPIN'])
                 if len(conn.entries) > 0:
-                    username = conn.entries[0]['uid']
-                    record = conn.entries[0]['c-labPIN']
+                    username = conn.entries[0]['uid'].value
+                    record = conn.entries[0]['c-labPIN'].value
 
                     # This should never work, but maybe there are some legacy LDAP entries that
                     # are not hashed.

@@ -219,7 +219,7 @@ def control_loop():
 
 def open_if_correct(uid, pin):
     print('checking ldap ...')
-    if authenticate(uid, pin):
+    if AUTH.check(uid, pin):
         subprocess.Popen([PLAYER, './themes/%s/success.wav' % THEME],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         next_theme()

@@ -27,8 +27,8 @@ from RPi import GPIO
 
 from raspberrylock.authorization.c_base_ldap import CBaseLDAPAuthorization
 
-logging.basicConfig(level=logging.DEBUG, stream=sys.stderr, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
+logging.basicConfig(level=logging.DEBUG, stream=sys.stderr,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log = logging.getLogger('schloss.py')
 
 __version__ = '0.1.0'
@@ -222,11 +222,12 @@ def control_loop():
 
 def open_if_correct(uid, pin):
     print('checking ldap ...')
-    if AUTH.check(uid, pin):
+    result = AUTH.check(uid, pin)
+    if result == True:
         log.info('Opening...')
         subprocess.Popen([PLAYER, './themes/%s/success.wav' % THEME],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        next_theme()
+        # next_theme()
         with LOCK:
             GPIO.output(OPEN_PIN, 1)
             time.sleep(1)

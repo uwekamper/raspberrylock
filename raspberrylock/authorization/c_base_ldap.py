@@ -1,7 +1,6 @@
 import base64
 import hashlib
 import logging
-
 import ldap3
 
 from .base_authorization import BaseAuthorization
@@ -12,6 +11,9 @@ log = logging.getLogger(__name__)
 class CBaseLDAPAuthorization(BaseAuthorization):
 
     def check_c_base_hash(self, record, pin, username):
+        """
+        Passwords are stored as hashes.
+        """
         bd = base64.b64decode(bytearray(record[6:], 'UTF-8'))
         hash = hashlib.sha1(bytearray(pin, 'UTF-8') + bd[20:]).digest()
         if bd[:20] == hash:
@@ -31,7 +33,7 @@ class CBaseLDAPAuthorization(BaseAuthorization):
         #if uid == '' or pin == '':
         #    return False
 
-        log.info("Connecting")
+        log.info("Connecting LDAP ...")
         try:
             server = ldap3.Server(self.config.URI, get_info=ldap3.ALL)
             with ldap3.Connection(server, self.config.BINDDN, self.config.BINDPW,

@@ -10,6 +10,8 @@ try:
 except ImportError:
     import FakeRPi.GPIO as GPIO
 
+log = logging.getLogger(__name__)
+
 
 class MatrixKeyboard(BaseKeyboard):
     OPEN_PIN = 15
@@ -32,7 +34,6 @@ class MatrixKeyboard(BaseKeyboard):
                'F': [BOUNCE_TIME, False]}
 
     def __init__(self):
-        self.logger = logging.getLogger('hw')
         GPIO.setwarnings(False)
 
         GPIO.setmode(GPIO.BOARD)
@@ -95,7 +96,7 @@ class MatrixKeyboard(BaseKeyboard):
         #if GPIO.input(self.BUTTON_PIN):
         #    pressed.append('O')
         # only return the first detected button release
-        self.logger.debug('buttons released: %s' % ', '.join(pressed))
+        # log.debug('buttons released: %s' % ', '.join(pressed))
         return pressed
 
 

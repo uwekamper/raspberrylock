@@ -14,7 +14,7 @@ Options:
   --version        Show version.
   --theme=<theme>  Sound theme [default: default].
 """
-
+import asyncio
 import os
 import sys
 import time
@@ -26,6 +26,7 @@ from threading import Thread, RLock
 from RPi import GPIO
 
 from raspberrylock.authorization.c_base_ldap import CBaseLDAPAuthorization
+from raspberrylock.keyboards.matrix_keyboard import MatrixKeyboard
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stderr,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -38,15 +39,15 @@ GPIO.setwarnings(False)
 
 NUMERIC_KEYS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
-BOUNCE_TIME = 600  # in milliseconds
+BOUNCE_TIME = 1200  # in milliseconds
 STALE_TIMEOUT = 30  # in seconds
 timeouts = {'1': BOUNCE_TIME, '2': BOUNCE_TIME, '3': BOUNCE_TIME, '4': BOUNCE_TIME,
             '5': BOUNCE_TIME, '6': BOUNCE_TIME, '7': BOUNCE_TIME, '8': BOUNCE_TIME,
             '9': BOUNCE_TIME, '0': BOUNCE_TIME, 'A': BOUNCE_TIME, 'B': BOUNCE_TIME,
             'C': BOUNCE_TIME, 'D': BOUNCE_TIME, 'E': BOUNCE_TIME, 'F': BOUNCE_TIME}
 
-Q = Queue()
-LOCK = RLock()
+Q = asyncio.Queue() # Queue()
+# LOCK = RLock()
 
 ROWS = [11, 7, 5, 3]
 COLS = [16, 12, 10, 8]
@@ -151,7 +152,7 @@ def reset_state():
     PIN = ''
 
 
-def timeout_reset_state():
+async def timeout_reset_state():
     global RESET_TIMER
 
     while True:
@@ -159,10 +160,17 @@ def timeout_reset_state():
         if RESET_TIMER <= 0:
             reset_state()
             RESET_TIMER = STALE_TIMEOUT
-        time.sleep(1.0)
+        await asyncio.sleep(1.0)
 
 
-def control_loop():
+async def play_key_tone():
+    num = random.randint(0, 9)
+    subprocess.Popen([PLAYER, './themes/%s/%s.wav' % (THEME, num)],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    log.debug('%s ./themes/%s/%s.wav' % (PLAYER, THEME, num))
+
+
+async def control_loop():
     global RESET_TIMER
     global STATE, UID, PIN
 
@@ -174,11 +182,14 @@ def control_loop():
     # The first and second 'A' presses are optional and ignored for compatibility with the replicator.
     # The second 'A' would be mandatory for a non-4-digit UID, luckily all c-base UIDs are 4-digit, though.
     while True:
-        key = Q.get()
+        key = await Q.get()
         log.info('state={}, got symbol'.format(STATE))
-        log.debug('Symbol: {}'.format(key))
+        log.debug('Symbol: {}'.format('#')) #key))
         RESET_TIMER = STALE_TIMEOUT
         Q.task_done()
+
+        asyncio.ensure_future(play_key_tone())
+
         if STATE == 0:
             if key == 'A':
                 # print('Enter UID:')
@@ -228,42 +239,49 @@ def open_if_correct(uid, pin):
         subprocess.Popen([PLAYER, './themes/%s/success.wav' % THEME],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         # next_theme()
-        with LOCK:
-            GPIO.output(OPEN_PIN, 1)
-            time.sleep(1)
-            GPIO.output(OPEN_PIN, 0)
-            time.sleep(13)
+        #with LOCK:
+        GPIO.output(OPEN_PIN, 1)
+        time.sleep(1)
+        GPIO.output(OPEN_PIN, 0)
+        time.sleep(13)
     else:
         subprocess.Popen([PLAYER, './themes/%s/fail.wav' % THEME],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        with LOCK:
-            time.sleep(2)
+
+        time.sleep(2)
     log.info('End openifcorrect...')
 
 
-def keypad_loop():
+async def keypad_loop():
+    # initialize the keypad class
+    keyboard = MatrixKeyboard()
     while True:
-        with LOCK:
-            key = read_keypad()
-            if key:
-                Q.put(key)
+        #with LOCK:
+        key = keyboard.read_buttons()
+        if key:
+            Q.put_nowait(key)
+        await asyncio.sleep(0.001)
 
 
-def main():
+def main(loop):
     # os.nice(10)
     init_gpios()
-    control_thread = Thread(target=control_loop)
-    control_thread.start()
-    keypad_thread = Thread(target=keypad_loop)
-    keypad_thread.start()
-    timeout_thread = Thread(target=timeout_reset_state)
-    timeout_thread.start()
+    tasks = [
+        asyncio.ensure_future(control_loop()),
+        asyncio.ensure_future(keypad_loop()),
+        asyncio.ensure_future(timeout_reset_state()),
+    ]
+    loop.run_until_complete(asyncio.wait(tasks))
+    loop.close()
 
 
 if __name__ == '__main__':
     # args = docopt(__doc__, version=__version__)
     try:
         # THEME = args['--theme']
-        main()
+        loop = asyncio.get_event_loop()
+        # Blocking call which returns when the display_date() coroutine is done
+        main(loop)
+        loop.close()
     except KeyboardInterrupt:
         GPIO.cleanup()
